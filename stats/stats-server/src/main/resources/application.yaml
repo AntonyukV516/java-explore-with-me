@@ -1,11 +1,13 @@
 server:
   port: 9090
+
 spring:
   datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://stats-db:5432/stats-db
+    url: jdbc:postgresql://stats-db:5432/stats
     username: stats
     password: stats
+    driver-class-name: org.postgresql.Driver
+
   jpa:
     properties:
       hibernate:
@@ -14,9 +16,7 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: 'true'
-  sql:
-    init:
-      mode: always
+
 logging:
   level:
     org:
@@ -24,7 +24,5 @@ logging:
         orm:
           jpa:
             JpaTransactionManager: DEBUG
-            nodeValue: INFO
         transaction:
           interceptor: TRACE
-          nodeValue: INFO
