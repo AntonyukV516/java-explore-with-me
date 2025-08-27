@@ -2,47 +2,82 @@ package ru.practicum.controller.privateControllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-import ru.practicum.model.dto.RequestEventDto;
-import ru.practicum.model.dto.ResponseEventFullDto;
-import ru.practicum.model.dto.ResponseEventShortDto;
-import ru.practicum.model.dto.UpdateEventUserRequest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+import ru.practicum.model.dto.ParticipationRequest.EventRequestStatusUpdateRequest;
+import ru.practicum.model.dto.ParticipationRequest.EventRequestStatusUpdateResult;
+import ru.practicum.model.dto.ParticipationRequest.ParticipationRequestDto;
+import ru.practicum.model.dto.event.EventDto;
+import ru.practicum.model.dto.event.UpdateEventDto;
 import ru.practicum.service.EventService;
+import ru.practicum.service.ParticipationRequestService;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/users/{userId}/events")
+@Validated
 public class PrivateEventController {
-
     private final EventService eventService;
+    private final ParticipationRequestService participationRequestService;
 
     @GetMapping
-    public List<ResponseEventShortDto> getEvents(@PathVariable Long userId,
-                                                 @RequestParam(defaultValue = "0") Integer from,
-                                                 @RequestParam(defaultValue = "10") Integer size) {
-        return eventService.getEventsByUser(userId, from, size);
-    }
-
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEventFullDto addEvent(@PathVariable Long userId,
-                                         @Valid @RequestBody RequestEventDto requestEventDto) {
-        return eventService.addEvent(userId, requestEventDto);
+    public ResponseEntity<List<EventDto>> getEventsByUserId(@PathVariable Long userId,
+                                                            @RequestParam(defaultValue = "0") Integer from,
+                                                            @RequestParam(defaultValue = "10") Integer size) {
+        log.info("Получен запрос GET /users/{}/events", userId);
+        return ResponseEntity.ok(eventService.findByUserId(userId, from, size));
     }
 
     @GetMapping("/{eventId}")
-    public ResponseEventFullDto getEvent(@PathVariable Long userId,
-                                         @PathVariable Long eventId) {
-        return eventService.getEventByUser(userId, eventId);
+    public ResponseEntity<EventDto> getEventByUserId(@PathVariable Long userId,
+                                                     @PathVariable Long eventId) {
+        log.info("Получен запрос GET /users/{}/events/{}", userId, eventId);
+        return ResponseEntity.ok(eventService.findByIdAndUser(userId, eventId));
+    }
+
+    @GetMapping("/{eventId}/requests")
+    public ResponseEntity<List<ParticipationRequestDto>> getRequests(@PathVariable Long userId,
+                                                                     @PathVariable Long eventId) {
+        log.info("Получен запрос GET /users/{}/events/{}/requests", userId, eventId);
+        return ResponseEntity.ok(participationRequestService.getAllByEventAndInitiator(userId, eventId));
+    }
+
+    @PostMapping()
+    @ResponseStatus(HttpStatus.CREATED)
+    public EventDto create(@PathVariable Long userId,
+                           @RequestBody @Valid EventDto eventDto) {
+        log.info("Получен запрос POST /users/{}/events c новым событием: {}", userId, eventDto);
+        return eventService.create(userId, eventDto);
     }
 
     @PatchMapping("/{eventId}")
-    public ResponseEventFullDto updateEvent(@PathVariable Long userId,
-                                            @PathVariable Long eventId,
-                                            @RequestBody UpdateEventUserRequest updateRequest) {
-        return eventService.updateEventByUser(userId, eventId, updateRequest);
+    public EventDto update(@PathVariable Long userId,
+                           @PathVariable Long eventId,
+                           @RequestBody @Valid UpdateEventDto eventDto) {
+        log.info("Получен запрос PATCH /users/{}/events/{} c новым событием: {}", userId, eventId, eventDto);
+        return eventService.updateByUser(userId, eventId, eventDto);
+
+    }
+
+    @PatchMapping("/{eventId}/requests")
+    public ResponseEntity<EventRequestStatusUpdateResult> updateRequest(@PathVariable Long userId,
+                                                                        @PathVariable Long eventId,
+                                                                        @RequestBody @Valid EventRequestStatusUpdateRequest eventDto) {
+        log.info("Получен запрос PATCH /users/{}/events/{}/request с параметрами: {}", userId, eventId, eventDto);
+        return ResponseEntity.ok(participationRequestService.updateStatus(userId, eventId, eventDto));
     }
 }

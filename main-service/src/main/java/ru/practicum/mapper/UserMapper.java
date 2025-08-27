@@ -1,22 +1,29 @@
 package ru.practicum.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import ru.practicum.model.dto.RequestUserDto;
-import ru.practicum.model.dto.ResponseUserDto;
-import ru.practicum.model.dto.ResponseUserShortDto;
+import ru.practicum.model.dto.user.UserDto;
 import ru.practicum.model.entity.User;
 
-@Mapper(componentModel = "spring")
-public interface UserMapper {
+public class UserMapper {
+    public static User toUser(UserDto userDto) {
+        return User.builder()
+                .id(userDto.getId())
+                .email(userDto.getEmail())
+                .name(userDto.getName())
+                .build();
+    }
 
-    User toEntity(RequestUserDto requestUserDto);
+    public static UserDto toUserDto(User user) {
+        return UserDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .name(user.getName())
+                .build();
+    }
 
-    ResponseUserDto toDto(User user);
-
-    ResponseUserShortDto toShortDto(User user);
-
-    @Mapping(target = "id", ignore = true)
-    void updateUserFromRequest(RequestUserDto request, @MappingTarget User user);
+    public static UserDto toUserDtoWithoutEmail(User user) {
+        return UserDto.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .build();
+    }
 }

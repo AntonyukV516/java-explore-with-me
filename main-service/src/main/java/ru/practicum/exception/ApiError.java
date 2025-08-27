@@ -8,9 +8,13 @@ import java.util.List;
 @Data
 @Builder
 public class ApiError {
-    private String status;
-    private String reason;
-    private String message;
     private List<String> errors;
+
+    private String status;
+
+    private String reason;
+
+    private String message;
+
     private String timestamp;
 }

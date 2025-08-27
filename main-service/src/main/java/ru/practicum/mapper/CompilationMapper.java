@@ -1,16 +1,36 @@
 package ru.practicum.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import ru.practicum.model.dto.RequestCompilationDto;
-import ru.practicum.model.dto.ResponseCompilationDto;
+import ru.practicum.model.dto.compilation.CompilationDto;
+import ru.practicum.model.dto.compilation.NewCompilationDto;
+import ru.practicum.model.dto.compilation.UpdateCompilationRequest;
 import ru.practicum.model.entity.Compilation;
+import ru.practicum.model.entity.Event;
 
-@Mapper(componentModel = "spring", uses = {EventMapper.class})
-public interface CompilationMapper {
+import java.util.Set;
 
-    @Mapping(target = "events", ignore = true)
-    Compilation toEntity(RequestCompilationDto newCompilationDto);
+public class CompilationMapper {
+    public static Compilation newCompilationDtoToCompilation(NewCompilationDto dto, Set<Event> events) {
+        return Compilation.builder()
+                .title(dto.getTitle())
+                .pinned(dto.getPinned() != null ? dto.getPinned() : false)
+                .events(events)
+                .build();
+    }
 
-    ResponseCompilationDto toDto(Compilation compilation);
+    public static Compilation updateCompilationDtoToCompilation(UpdateCompilationRequest dto, Set<Event> events) {
+        return Compilation.builder()
+                .title(dto.getTitle())
+                .pinned(dto.getPinned() != null ? dto.getPinned() : false)
+                .events(events)
+                .build();
+    }
+
+    public static CompilationDto toCompilationDto(Compilation compilation) {
+        return CompilationDto.builder()
+                .id(compilation.getId())
+                .title(compilation.getTitle())
+                .pinned(compilation.getPinned())
+                .events(compilation.getEvents().stream().toList())
+                .build();
+    }
 }

@@ -1,27 +1,38 @@
 package ru.practicum.controller.publicControllers;
 
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.model.dto.ResponseCategoryDto;
+import ru.practicum.model.dto.category.CategoryDto;
 import ru.practicum.service.CategoryService;
 
 import java.util.List;
 
+
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/categories")
+@Validated
 public class PublicCategoryController {
+
 
     private final CategoryService categoryService;
 
     @GetMapping
-    public List<ResponseCategoryDto> getCategories(@RequestParam(defaultValue = "0") Integer from,
-                                                   @RequestParam(defaultValue = "10") Integer size) {
-        return categoryService.getCategories(from, size);
+    public ResponseEntity<List<CategoryDto>> getAll(@RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                                    @RequestParam(defaultValue = "10") @Positive Integer size) {
+        log.info("Получен запрос GET /categories");
+        return ResponseEntity.ok(categoryService.getAll(from, size));
     }
 
-    @GetMapping("/{catId}")
-    public ResponseCategoryDto getCategory(@PathVariable Long catId) {
-        return categoryService.getCategory(catId);
+    @GetMapping("/{id}")
+    public ResponseEntity<CategoryDto> getById(@PathVariable Long id) {
+        log.info("Получен запрос GET /categories/{}", id);
+        return ResponseEntity.ok(categoryService.getById(id));
     }
 }

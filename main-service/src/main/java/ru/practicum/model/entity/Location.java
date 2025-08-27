@@ -1,16 +1,19 @@
 package ru.practicum.model.entity;
 
-import jakarta.persistence.Embeddable;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.*;
 
-@Embeddable
-@Getter
-@Setter
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Location {
+    @Positive(message = "Широта должна быть положительной")
+    @NotNull(message = "Широта не может быть пустой")
+    private Double lat;
 
-    private Float lat;
-    private Float lon;
+    @Positive(message = "Долгота должна быть положительной")
+    @NotNull(message = "Долгота не может быть пустой")
+    private Double lon;
 }

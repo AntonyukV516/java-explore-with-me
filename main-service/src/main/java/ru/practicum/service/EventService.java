@@ -1,28 +1,26 @@
 package ru.practicum.service;
 
-import ru.practicum.model.dto.*;
+import ru.practicum.model.dto.event.*;
+import ru.practicum.model.entity.Event;
 
 import java.util.List;
 
 public interface EventService {
+    List<EventDto> findByUserId(Long userId, Integer from, Integer size);
 
-    List<ResponseEventShortDto> getEventsByUser(Long userId, Integer from, Integer size);
+    EventDto findByIdAndUser(Long userId, Long eventId);
 
-    ResponseEventFullDto addEvent(Long userId, RequestEventDto requestEventDto);
+    List<EventDto> searchCommon(EventSearchCommon search);
 
-    ResponseEventFullDto getEventByUser(Long userId, Long eventId);
+    List<EventDto> searchAdmin(EventSearchAdmin search);
 
-    ResponseEventFullDto updateEventByUser(Long userId, Long eventId, UpdateEventUserRequest updateRequest);
+    EventDto findById(Long eventId);
 
-    List<ResponseEventFullDto> getEventsByAdmin(List<Long> users, List<String> states,
-                                        List<Long> categories, String rangeStart,
-                                        String rangeEnd, Integer from, Integer size);
+    Event findEventById(Long eventId);
 
-    ResponseEventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequest updateRequest);
+    EventDto create(Long userId, EventDto newEventDto);
 
-    List<ResponseEventShortDto> getEventsPublic(String text, List<Long> categories, Boolean paid,
-                                        String rangeStart, String rangeEnd, Boolean onlyAvailable,
-                                        String sort, Integer from, Integer size);
+    EventDto updateByAdmin(long eventId, UpdateAdminEventDto eventDto);
 
-    ResponseEventFullDto getEventPublic(Long id);
+    EventDto updateByUser(Long userId, Long eventId, UpdateEventDto eventDto);
 }

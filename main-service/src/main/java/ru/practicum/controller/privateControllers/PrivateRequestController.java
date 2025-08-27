@@ -1,48 +1,48 @@
 package ru.practicum.controller.privateControllers;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-import ru.practicum.model.dto.EventRequestStatusUpdateRequest;
-import ru.practicum.model.dto.EventRequestStatusUpdateResult;
-import ru.practicum.model.dto.ParticipationRequestDto;
-import ru.practicum.service.RequestService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import ru.practicum.model.dto.ParticipationRequest.ParticipationRequestDto;
+import ru.practicum.service.ParticipationRequestService;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/users/{userId}")
+@Slf4j
+@RequestMapping("/users/{userId}/requests")
+@Validated
 public class PrivateRequestController {
 
-    private final RequestService requestService;
+    private final ParticipationRequestService participationRequestService;
 
-    @GetMapping("/requests")
-    public List<ParticipationRequestDto> getUserRequests(@PathVariable Long userId) {
-        return requestService.getUserRequests(userId);
+    @GetMapping()
+    public ResponseEntity<List<ParticipationRequestDto>> getAll(@PathVariable Long userId) {
+        log.info("Получен запрос GET /users/{}/requests", userId);
+        return ResponseEntity.ok(participationRequestService.getAllByUser(userId));
     }
 
-    @PostMapping("/requests")
-    public ParticipationRequestDto addParticipationRequest(@PathVariable Long userId,
-                                                           @RequestParam Long eventId) {
-        return requestService.addParticipationRequest(userId, eventId);
+    @PostMapping()
+    public ResponseEntity<ParticipationRequestDto> create(@PathVariable Long userId,
+                                                          @RequestParam Long eventId) {
+        log.info("Получен запрос POST /users/{}/requests?eventId={}", userId, eventId);
+        return new ResponseEntity<>(participationRequestService.create(userId, eventId), HttpStatus.CREATED);
     }
 
-    @PatchMapping("/requests/{requestId}/cancel")
-    public ParticipationRequestDto cancelRequest(@PathVariable Long userId,
-                                                 @PathVariable Long requestId) {
-        return requestService.cancelRequest(userId, requestId);
-    }
-
-    @GetMapping("/events/{eventId}/requests")
-    public List<ParticipationRequestDto> getEventParticipants(@PathVariable Long userId,
-                                                              @PathVariable Long eventId) {
-        return requestService.getEventParticipants(userId, eventId);
-    }
-
-    @PatchMapping("/events/{eventId}/requests")
-    public EventRequestStatusUpdateResult changeRequestStatus(@PathVariable Long userId,
-                                                              @PathVariable Long eventId,
-                                                              @RequestBody EventRequestStatusUpdateRequest updateRequest) {
-        return requestService.changeRequestStatus(userId, eventId, updateRequest);
+    @PatchMapping("/{requestId}/cancel")
+    public ResponseEntity<ParticipationRequestDto> cancel(@PathVariable Long userId,
+                                                          @PathVariable Long requestId) {
+        log.info("Получен запрос PATCH /users/{}/requests/{}/cancel", userId, requestId);
+        return ResponseEntity.ok(participationRequestService.cancel(userId, requestId));
     }
 }

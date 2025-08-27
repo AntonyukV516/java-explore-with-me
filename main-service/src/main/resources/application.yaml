@@ -6,13 +6,13 @@ spring:
     driver-class-name: org.postgresql.Driver
 
   jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
+        format_sql: 'true'
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: 'true'
 
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
@@ -22,6 +22,11 @@ spring:
 
 server:
   port: 8080
+
+MainServiceApp:
+  name: main-service
+  stats-service:
+    url: http://stats-server-container:9090
 
 stats:
   service:

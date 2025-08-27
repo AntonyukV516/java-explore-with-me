@@ -1,35 +1,55 @@
 package ru.practicum.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
-import ru.practicum.model.dto.*;
+
+import ru.practicum.model.dto.event.EventDto;
+import ru.practicum.model.dto.event.EventState;
+import ru.practicum.model.entity.Category;
 import ru.practicum.model.entity.Event;
+import ru.practicum.model.entity.Location;
+import ru.practicum.model.entity.User;
 
-@Mapper(componentModel = "spring")
-public interface EventMapper {
+import java.time.LocalDateTime;
 
-    @Mapping(target = "category", ignore = true)
-    @Mapping(target = "initiator", ignore = true)
-    Event toEntity(RequestEventDto requestEventDto);
+public class EventMapper {
+    public static EventDto toEventDto(Event event) {
+        return EventDto.builder()
+                .id(event.getId())
+                .annotation(event.getAnnotation())
+                .category(CategoryMapper.categoryToDto(event.getCategory()).getId())
+                .createdOn(event.getCreatedOn())
+                .description(event.getDescription())
+                .eventDate(event.getEventDate())
+                .initiator(UserMapper.toUserDto(event.getInitiator()))
+                .location(new Location(event.getLat().doubleValue(), event.getLon().doubleValue()))
+                .paid(event.getPaid())
+                .participantLimit(event.getParticipantLimit())
+                .confirmedRequests(event.getConfirmedRequests())
+                .publishedOn(event.getPublishedOn())
+                .requestModeration(event.getRequestModeration())
+                .state(event.getState())
+                .title(event.getTitle())
+                .views(event.getViews())
+                .build();
+    }
 
-    ResponseEventFullDto toFullDto(Event event);
 
-    ResponseEventShortDto toShortDto(Event event);
-
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "category", ignore = true)
-    @Mapping(target = "initiator", ignore = true)
-    @Mapping(target = "createdOn", ignore = true)
-    @Mapping(target = "publishedOn", ignore = true)
-    @Mapping(target = "state", ignore = true)
-    void updateEntityFromUserRequest(UpdateEventUserRequest request, @MappingTarget Event event);
-
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "category", ignore = true)
-    @Mapping(target = "initiator", ignore = true)
-    @Mapping(target = "createdOn", ignore = true)
-    @Mapping(target = "publishedOn", ignore = true)
-    @Mapping(target = "state", ignore = true)
-    void updateEntityFromAdminRequest(UpdateEventAdminRequest request, @MappingTarget Event event);
+    public static Event newRequestToEvent(EventDto eventDto, User user, Category category) {
+        return Event.builder()
+                .initiator(user)
+                .category(category)
+                .title(eventDto.getTitle())
+                .paid(eventDto.getPaid() != null && eventDto.getPaid())
+                .requestModeration(eventDto.getRequestModeration() == null || eventDto.getRequestModeration())
+                .participantLimit(eventDto.getParticipantLimit() == null ? 0 : eventDto.getParticipantLimit())
+                .lon(eventDto.getLocation().getLon())
+                .lat(eventDto.getLocation().getLat())
+                .annotation(eventDto.getAnnotation())
+                .eventDate(eventDto.getEventDate())
+                .description(eventDto.getDescription())
+                .createdOn(LocalDateTime.now())
+                .state(EventState.PENDING)
+                .confirmedRequests(0L)
+                .views(0L)
+                .build();
+    }
 }

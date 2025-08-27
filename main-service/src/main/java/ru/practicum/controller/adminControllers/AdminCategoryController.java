@@ -2,34 +2,38 @@ package ru.practicum.controller.adminControllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.model.dto.RequestCategoryDto;
-import ru.practicum.model.dto.ResponseCategoryDto;
+import ru.practicum.model.dto.category.CategoryDto;
 import ru.practicum.service.CategoryService;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/admin/categories")
+@Validated
 public class AdminCategoryController {
-
     private final CategoryService categoryService;
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public ResponseCategoryDto addCategory(@Valid @RequestBody RequestCategoryDto requestCategoryDto) {
-        return categoryService.addCategory(requestCategoryDto);
+    @PostMapping()
+    public ResponseEntity<CategoryDto> create(@RequestBody @Valid CategoryDto categoryDto) {
+        log.info("Получен запрос POST /admin/categories c новой категорией: {}", categoryDto);
+        return new ResponseEntity<>(categoryService.create(categoryDto), HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/{catId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCategory(@PathVariable Long catId) {
-        categoryService.deleteCategory(catId);
+    @PatchMapping("/{id}")
+    public ResponseEntity<CategoryDto> update(@PathVariable Long id, @RequestBody @Valid CategoryDto newCategoryDto) {
+        log.info("Получен запрос PATCH /admin/categories/{} с обновлённой категорией: {}", id, newCategoryDto);
+        return ResponseEntity.ok(categoryService.update(id, newCategoryDto));
     }
 
-    @PatchMapping("/{catId}")
-    public ResponseCategoryDto updateCategory(@PathVariable Long catId,
-                                              @Valid @RequestBody RequestCategoryDto categoryDto) {
-        return categoryService.updateCategory(catId, categoryDto);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        log.info("Получен запрос DELETE /admin/categories/{}", id);
+        categoryService.delete(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

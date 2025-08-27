@@ -1,20 +1,19 @@
 package ru.practicum.service;
 
-import ru.practicum.model.dto.RequestCompilationDto;
-import ru.practicum.model.dto.ResponseCompilationDto;
-import ru.practicum.model.dto.UpdateCompilationRequest;
+import ru.practicum.model.dto.compilation.CompilationDto;
+import ru.practicum.model.dto.compilation.NewCompilationDto;
+import ru.practicum.model.dto.compilation.UpdateCompilationRequest;
 
 import java.util.List;
 
 public interface CompilationService {
+    List<CompilationDto> findAll(Boolean pinned, Integer from, Integer size);
 
-    ResponseCompilationDto saveCompilation(RequestCompilationDto requestCompilationDto);
+    CompilationDto findById(Long compId);
 
-    void deleteCompilation(Long compId);
+    CompilationDto create(NewCompilationDto compilationDto);
 
-    ResponseCompilationDto updateCompilation(Long compId, UpdateCompilationRequest updateRequest);
+    CompilationDto update(Long compilationId, UpdateCompilationRequest updateCompilationRequest);
 
-    List<ResponseCompilationDto> getCompilations(Boolean pinned, Integer from, Integer size);
-
-    ResponseCompilationDto getCompilation(Long compId);
+    void delete(Long compilationId);
 }

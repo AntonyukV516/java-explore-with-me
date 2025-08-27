@@ -1,28 +1,38 @@
 package ru.practicum.controller.publicControllers;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-import ru.practicum.model.dto.ResponseCompilationDto;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import ru.practicum.model.dto.compilation.CompilationDto;
 import ru.practicum.service.CompilationService;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/compilations")
+@Validated
 public class PublicCompilationController {
-
     private final CompilationService compilationService;
 
     @GetMapping
-    public List<ResponseCompilationDto> getCompilations(@RequestParam(required = false) Boolean pinned,
+    public ResponseEntity<List<CompilationDto>> findAll(@RequestParam(required = false) Boolean pinned,
                                                         @RequestParam(defaultValue = "0") Integer from,
                                                         @RequestParam(defaultValue = "10") Integer size) {
-        return compilationService.getCompilations(pinned, from, size);
+        log.info("Получен запрос GET /compilations");
+        return ResponseEntity.ok(compilationService.findAll(pinned, from, size));
     }
 
     @GetMapping("/{compId}")
-    public ResponseCompilationDto getCompilation(@PathVariable Long compId) {
-        return compilationService.getCompilation(compId);
+    public ResponseEntity<CompilationDto> findById(@PathVariable Long compId) {
+        log.info("Получен запрос GET /compilations/{}", compId);
+        return ResponseEntity.ok(compilationService.findById(compId));
     }
 }
