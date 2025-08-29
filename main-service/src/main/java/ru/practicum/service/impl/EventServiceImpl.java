@@ -1,9 +1,9 @@
 package ru.practicum.service.impl;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.SimpleDateTimeFormatter;
 import ru.practicum.dto.StatsDto;
 import ru.practicum.ewm.client.stats.StatsClient;
@@ -55,7 +55,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public List<EventDto> searchCommon(EventSearchCommon search) {
         if (search.getRangeEnd() != null && search.getRangeStart() != null &&
                 search.getRangeEnd().isBefore(search.getRangeStart())) {
@@ -64,54 +64,19 @@ public class EventServiceImpl implements EventService {
 
         List<Event> events = eventRepository.findCommonEventsByFilters(search);
 
-        Map<Long, Long> viewsMap = getViewsForEvents(events);
-
-        events.forEach(event -> event.setViews(viewsMap.getOrDefault(event.getId(), 0L)));
-
-        eventRepository.saveAll(events);
+        Map<Long, Long> viewsMap = events.stream()
+                .collect(Collectors.toMap(
+                        Event::getId,
+                        event -> getViewsFromStatsServer(event.getId())
+                ));
 
         return events.stream()
-                .map(EventMapper::toEventDto)
-                .toList();
-    }
-
-    private Map<Long, Long> getViewsForEvents(List<Event> events) {
-        if (events.isEmpty()) {
-            return Map.of();
-        }
-
-        log.debug("Getting views for events: {}", events.stream()
-                .map(Event::getId).collect(Collectors.toList()));
-
-        LocalDateTime end = LocalDateTime.now();
-        LocalDateTime start = events.stream()
-                .map(Event::getCreatedOn)
-                .min(LocalDateTime::compareTo)
-                .orElse(end.minusYears(1));
-
-        String startStr = SimpleDateTimeFormatter.toString(start);
-        String endStr = SimpleDateTimeFormatter.toString(end);
-
-        log.debug("Searching stats from {} to {}", startStr, endStr);
-
-        List<String> uris = events.stream()
-                .map(event -> "/events/" + event.getId())
+                .map(event -> {
+                    EventDto dto = EventMapper.toEventDto(event);
+                    dto.setViews(viewsMap.getOrDefault(event.getId(), 0L));
+                    return dto;
+                })
                 .collect(Collectors.toList());
-
-        log.debug("URIs to search: {}", uris);
-
-        List<StatsDto> stats = statsClient.getStats(startStr, endStr, uris, true);
-        log.debug("Stats response: {}", stats);
-
-        return stats.stream()
-                .collect(Collectors.toMap(
-                        stat -> extractEventIdFromUri(stat.getUri()),
-                        StatsDto::getHits
-                ));
-    }
-
-    private Long extractEventIdFromUri(String uri) {
-        return Long.parseLong(uri.replace("/events/", ""));
     }
 
     @Override
@@ -124,7 +89,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public EventDto findById(Long eventId) {
         Event event = findEventById(eventId);
 
@@ -132,27 +97,34 @@ public class EventServiceImpl implements EventService {
             throw new NotFoundException("Событие с id=" + eventId + " не найдено");
         }
 
-        Map<Long, Long> viewsMap = getViewsForEvents(List.of(event));
-        event.setViews(viewsMap.getOrDefault(eventId, 0L));
+        Long currentViews = getViewsFromStatsServer(eventId);
 
-        eventRepository.save(event);
+        EventDto dto = EventMapper.toEventDto(event);
 
-        return EventMapper.toEventDto(event);
+        dto.setViews(currentViews == 0L ? 1L : currentViews);
+
+        return dto;
+    }
+
+    private Long getViewsFromStatsServer(Long eventId) {
+        try {
+            List<StatsDto> stats = statsClient.getStats(
+                    "1900-01-01 00:00:00",
+                    SimpleDateTimeFormatter.toString(LocalDateTime.now()),
+                    List.of("/events/" + eventId),
+                    true
+            );
+            return stats.isEmpty() ? 0L : stats.getFirst().getHits();
+        } catch (Exception e) {
+            log.warn("Failed to get views from stats server: {}", e.getMessage());
+            return 0L;
+        }
     }
 
     @Transactional
     private Event findEventById(Long eventId) {
         return eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Событие с id=" + eventId + " не найдено"));
-    }
-
-    private Long getViews(Long id) {
-        List<StatsDto> result = statsClient.getStats("1900-01-01 00:00:00",
-                SimpleDateTimeFormatter.toString(LocalDateTime.now().plusMinutes(2)),
-                List.of("/events/" + id),
-                true);
-
-        return result.isEmpty() ? 0L : result.getFirst().getHits();
     }
 
     @Override
