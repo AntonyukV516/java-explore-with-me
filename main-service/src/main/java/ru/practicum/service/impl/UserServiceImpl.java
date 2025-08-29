@@ -1,6 +1,9 @@
 package ru.practicum.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.exception.ConditionsNotMetException;
 import ru.practicum.exception.NotFoundException;
@@ -21,7 +24,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDto> getAll(List<Long> ids, Integer from, Integer size) {
-        return userRepository.findUsers(ids, from, size).stream()
+        Pageable pageable = PageRequest.of(from / size, size);
+
+        Page<User> usersPage = (ids != null && !ids.isEmpty())
+                ? userRepository.findByIdIn(ids, pageable)
+                : userRepository.findAll(pageable);
+
+        return usersPage.getContent()
+                .stream()
                 .map(UserMapper::toUserDto)
                 .toList();
     }

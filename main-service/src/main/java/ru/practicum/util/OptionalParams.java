@@ -1,4 +1,4 @@
-package ru.practicum.exception;
+package ru.practicum.util;
 
 import javax.annotation.processing.Generated;
 

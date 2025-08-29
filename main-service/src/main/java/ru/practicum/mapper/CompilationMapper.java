@@ -12,7 +12,7 @@ public class CompilationMapper {
     public static Compilation newCompilationDtoToCompilation(NewCompilationDto dto, Set<Event> events) {
         return Compilation.builder()
                 .title(dto.getTitle())
-                .pinned(dto.getPinned() != null ? dto.getPinned() : false)
+                .pinned(dto.getPinned())
                 .events(events)
                 .build();
     }
@@ -20,7 +20,7 @@ public class CompilationMapper {
     public static Compilation updateCompilationDtoToCompilation(UpdateCompilationRequest dto, Set<Event> events) {
         return Compilation.builder()
                 .title(dto.getTitle())
-                .pinned(dto.getPinned() != null ? dto.getPinned() : false)
+                .pinned(dto.getPinned())
                 .events(events)
                 .build();
     }

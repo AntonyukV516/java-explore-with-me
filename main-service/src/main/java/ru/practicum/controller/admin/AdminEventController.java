@@ -1,4 +1,4 @@
-package ru.practicum.controller.adminControllers;
+package ru.practicum.controller.admin;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;

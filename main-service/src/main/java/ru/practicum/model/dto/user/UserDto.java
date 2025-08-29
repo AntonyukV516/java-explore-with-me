@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.exception.ExceptionMessages;
-import ru.practicum.exception.OptionalParams;
+import ru.practicum.util.OptionalParams;
 
 @Data
 @Setter

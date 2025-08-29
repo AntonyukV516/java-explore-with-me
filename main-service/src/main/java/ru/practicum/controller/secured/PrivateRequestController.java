@@ -1,4 +1,4 @@
-package ru.practicum.controller.privateControllers;
+package ru.practicum.controller.secured;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.model.dto.ParticipationRequest.ParticipationRequestDto;
+import ru.practicum.model.dto.participationRequest.ParticipationRequestDto;
 import ru.practicum.service.ParticipationRequestService;
 
 import java.util.List;

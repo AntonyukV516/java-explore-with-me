@@ -1,14 +1,6 @@
 package ru.practicum.model.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -52,11 +44,12 @@ public class Event {
     @JoinColumn(name = "initiator_id", nullable = false)
     private User initiator;
 
-    @Column(nullable = false)
-    private Double lat;
-
-    @Column(nullable = false)
-    private Double lon;
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "lat", column = @Column(name = "lat", nullable = false)),
+            @AttributeOverride(name = "lon", column = @Column(name = "lon", nullable = false))
+    })
+    private Location location;
 
     @Column(nullable = false)
     private Boolean paid = false;

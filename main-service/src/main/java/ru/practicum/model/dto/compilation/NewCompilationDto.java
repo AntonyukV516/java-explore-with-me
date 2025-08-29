@@ -14,7 +14,9 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NewCompilationDto {
-    private Boolean pinned;
+
+    @Builder.Default
+    private Boolean pinned = false;
 
     @NotBlank(message = "Название подборки не может быть пустым")
 

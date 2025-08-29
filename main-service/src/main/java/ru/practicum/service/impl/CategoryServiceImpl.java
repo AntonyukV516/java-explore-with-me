@@ -1,6 +1,8 @@
 package ru.practicum.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.exception.ConditionsNotMetException;
 import ru.practicum.exception.NotFoundException;
@@ -22,7 +24,12 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryDto> getAll(Integer from, Integer size) {
-        return categoryRepository.findCategories(from, size).stream().map(CategoryMapper::categoryToDto).toList();
+        Pageable pageable = PageRequest.of(from / size, size);
+        return categoryRepository.findAll(pageable)
+                .getContent()
+                .stream()
+                .map(CategoryMapper::categoryToDto)
+                .toList();
     }
 
     @Override

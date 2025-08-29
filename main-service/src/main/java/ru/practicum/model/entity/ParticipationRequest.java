@@ -15,7 +15,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ru.practicum.model.dto.ParticipationRequest.ParticipationRequestStatus;
+import ru.practicum.model.dto.participationRequest.ParticipationRequestStatus;
 
 
 @Entity(name = "requests")

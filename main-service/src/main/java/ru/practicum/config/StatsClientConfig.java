@@ -1,4 +1,4 @@
-package ru.practicum;
+package ru.practicum.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -9,7 +9,7 @@ import ru.practicum.ewm.client.stats.StatsClient;
 @Configuration
 public class StatsClientConfig {
 
-    @Value("${MainServiceApp.stats-service.url}")
+    @Value("${MainServiceApp.stats-service.url:http://localhost:9090}")
     private String statsServiceUrl;
 
     @Bean

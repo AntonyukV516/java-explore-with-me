@@ -1,8 +1,9 @@
 package ru.practicum.service.impl;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import ru.practicum.dto.SimpleDateTimeFormatter;
 import ru.practicum.dto.StatsDto;
 import ru.practicum.ewm.client.stats.StatsClient;
@@ -21,8 +22,11 @@ import ru.practicum.service.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
@@ -59,9 +63,55 @@ public class EventServiceImpl implements EventService {
         }
 
         List<Event> events = eventRepository.findCommonEventsByFilters(search);
+
+        Map<Long, Long> viewsMap = getViewsForEvents(events);
+
+        events.forEach(event -> event.setViews(viewsMap.getOrDefault(event.getId(), 0L)));
+
+        eventRepository.saveAll(events);
+
         return events.stream()
                 .map(EventMapper::toEventDto)
                 .toList();
+    }
+
+    private Map<Long, Long> getViewsForEvents(List<Event> events) {
+        if (events.isEmpty()) {
+            return Map.of();
+        }
+
+        log.debug("Getting views for events: {}", events.stream()
+                .map(Event::getId).collect(Collectors.toList()));
+
+        LocalDateTime end = LocalDateTime.now();
+        LocalDateTime start = events.stream()
+                .map(Event::getCreatedOn)
+                .min(LocalDateTime::compareTo)
+                .orElse(end.minusYears(1));
+
+        String startStr = SimpleDateTimeFormatter.toString(start);
+        String endStr = SimpleDateTimeFormatter.toString(end);
+
+        log.debug("Searching stats from {} to {}", startStr, endStr);
+
+        List<String> uris = events.stream()
+                .map(event -> "/events/" + event.getId())
+                .collect(Collectors.toList());
+
+        log.debug("URIs to search: {}", uris);
+
+        List<StatsDto> stats = statsClient.getStats(startStr, endStr, uris, true);
+        log.debug("Stats response: {}", stats);
+
+        return stats.stream()
+                .collect(Collectors.toMap(
+                        stat -> extractEventIdFromUri(stat.getUri()),
+                        StatsDto::getHits
+                ));
+    }
+
+    private Long extractEventIdFromUri(String uri) {
+        return Long.parseLong(uri.replace("/events/", ""));
     }
 
     @Override
@@ -82,15 +132,16 @@ public class EventServiceImpl implements EventService {
             throw new NotFoundException("Событие с id=" + eventId + " не найдено");
         }
 
-        event.setViews(getViews(event.getId()));
+        Map<Long, Long> viewsMap = getViewsForEvents(List.of(event));
+        event.setViews(viewsMap.getOrDefault(eventId, 0L));
+
         eventRepository.save(event);
 
         return EventMapper.toEventDto(event);
     }
 
-    @Override
     @Transactional
-    public Event findEventById(Long eventId) {
+    private Event findEventById(Long eventId) {
         return eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Событие с id=" + eventId + " не найдено"));
     }
@@ -144,8 +195,7 @@ public class EventServiceImpl implements EventService {
         event.setState(eventDto.getStateAction() == null ? event.getState() :
                 eventDto.getStateAction() == EventAdminStateAction.PUBLISH_EVENT ? EventState.PUBLISHED : EventState.CANCELED);
         event.setTitle(eventDto.getTitle() == null ? event.getTitle() : eventDto.getTitle());
-        event.setLat(eventDto.getLocation() == null ? event.getLat() : eventDto.getLocation().getLat());
-        event.setLon(eventDto.getLocation() == null ? event.getLon() : eventDto.getLocation().getLon());
+        event.setLocation(eventDto.getLocation() == null ? event.getLocation() : eventDto.getLocation());
 
         return EventMapper.toEventDto(eventRepository.save(event));
     }
@@ -186,8 +236,7 @@ public class EventServiceImpl implements EventService {
         event.setParticipantLimit(eventDto.getParticipantLimit() == null ? event.getParticipantLimit() : eventDto.getParticipantLimit());
         event.setRequestModeration(eventDto.getRequestModeration() == null ? event.getRequestModeration() : eventDto.getRequestModeration());
         event.setTitle(eventDto.getTitle() == null ? event.getTitle() : eventDto.getTitle());
-        event.setLat(eventDto.getLocation() == null ? event.getLat() : eventDto.getLocation().getLat());
-        event.setLon(eventDto.getLocation() == null ? event.getLon() : eventDto.getLocation().getLon());
+        event.setLocation(eventDto.getLocation() == null ? event.getLocation() : eventDto.getLocation());
 
         return EventMapper.toEventDto(eventRepository.save(event));
     }

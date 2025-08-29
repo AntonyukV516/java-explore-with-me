@@ -1,6 +1,9 @@
 package ru.practicum.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.exception.ConditionsNotMetException;
 import ru.practicum.exception.NotFoundException;
@@ -27,8 +30,19 @@ public class CompilationServiceImpl implements CompilationService {
 
     @Override
     public List<CompilationDto> findAll(Boolean pinned, Integer from, Integer size) {
-        return compilationRepository.findCompilations(pinned, from, size)
-                .stream().map(CompilationMapper::toCompilationDto).toList();
+        Pageable pageable = PageRequest.of(from / size, size);
+        Page<Compilation> compilationsPage;
+
+        if (pinned != null) {
+            compilationsPage = compilationRepository.findByPinned(pinned, pageable);
+        } else {
+            compilationsPage = compilationRepository.findAll(pageable);
+        }
+
+        return compilationsPage.getContent()
+                .stream()
+                .map(CompilationMapper::toCompilationDto)
+                .toList();
     }
 
     @Override
