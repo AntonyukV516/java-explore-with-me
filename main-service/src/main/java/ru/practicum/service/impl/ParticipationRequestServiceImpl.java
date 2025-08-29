@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class ParticipationParticipationRequestServiceImpl implements ParticipationRequestService {
+public class ParticipationRequestServiceImpl implements ParticipationRequestService {
     private final ParticipationRequestRepository participationRequestRepository;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
