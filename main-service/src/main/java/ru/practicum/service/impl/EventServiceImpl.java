@@ -101,13 +101,15 @@ public class EventServiceImpl implements EventService {
 
         EventDto dto = EventMapper.toEventDto(event);
 
-        dto.setViews(currentViews == 0L ? 1L : currentViews);
+        dto.setViews(currentViews);
 
         return dto;
     }
 
     private Long getViewsFromStatsServer(Long eventId) {
         try {
+            Thread.sleep(200);
+
             List<StatsDto> stats = statsClient.getStats(
                     "1900-01-01 00:00:00",
                     SimpleDateTimeFormatter.toString(LocalDateTime.now()),
