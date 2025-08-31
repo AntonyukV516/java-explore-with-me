@@ -148,6 +148,8 @@ public class EventServiceImpl implements EventService {
 
     private Long getViewsFromStatsServer(Event event) {
         try {
+            Thread.sleep(200);
+
             List<StatsDto> stats = statsClient.getStats(
                     SimpleDateTimeFormatter.toString(event.getCreatedOn()),
                     SimpleDateTimeFormatter.toString(LocalDateTime.now()),
