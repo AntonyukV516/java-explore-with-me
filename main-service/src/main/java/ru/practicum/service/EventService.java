@@ -1,6 +1,7 @@
 package ru.practicum.service;
 
 import ru.practicum.model.dto.event.*;
+import ru.practicum.model.entity.Event;
 
 import java.util.List;
 
@@ -20,4 +21,6 @@ public interface EventService {
     EventDto updateByAdmin(long eventId, UpdateAdminEventDto eventDto);
 
     EventDto updateByUser(Long userId, Long eventId, UpdateEventDto eventDto);
+
+    Event findEventById(Long eventId);
 }
