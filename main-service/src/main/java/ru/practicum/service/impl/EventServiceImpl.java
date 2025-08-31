@@ -123,8 +123,9 @@ public class EventServiceImpl implements EventService {
         }
     }
 
+    @Override
     @Transactional
-    private Event findEventById(Long eventId) {
+    public Event findEventById(Long eventId) {
         return eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Событие с id=" + eventId + " не найдено"));
     }
