@@ -21,6 +21,7 @@ import ru.practicum.service.EventService;
 import ru.practicum.service.UserService;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -64,11 +65,7 @@ public class EventServiceImpl implements EventService {
 
         List<Event> events = eventRepository.findCommonEventsByFilters(search);
 
-        Map<Long, Long> viewsMap = events.stream()
-                .collect(Collectors.toMap(
-                        Event::getId,
-                        event -> getViewsFromStatsServer(event.getId())
-                ));
+        Map<Long, Long> viewsMap = getViewsFromStatsServer(events);
 
         return events.stream()
                 .map(event -> {
@@ -97,7 +94,7 @@ public class EventServiceImpl implements EventService {
             throw new NotFoundException("Событие с id=" + eventId + " не найдено");
         }
 
-        Long currentViews = getViewsFromStatsServer(eventId);
+        Long currentViews = getViewsFromStatsServer(event);
 
         EventDto dto = EventMapper.toEventDto(event);
 
@@ -106,14 +103,57 @@ public class EventServiceImpl implements EventService {
         return dto;
     }
 
-    private Long getViewsFromStatsServer(Long eventId) {
+    private Map<Long, Long> getViewsFromStatsServer(List<Event> events) {
+        if (events.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        List<String> uris = events.stream()
+                .map(event -> "/events/" + event.getId())
+                .collect(Collectors.toList());
+
+        LocalDateTime earliestEventDate = events.stream()
+                .map(Event::getCreatedOn)
+                .min(LocalDateTime::compareTo)
+                .orElse(LocalDateTime.now());
+
+        try {
+            List<StatsDto> stats = statsClient.getStats(
+                    SimpleDateTimeFormatter.toString(earliestEventDate),
+                    SimpleDateTimeFormatter.toString(LocalDateTime.now()),
+                    uris,
+                    true
+            );
+
+            return stats.stream()
+                    .collect(Collectors.toMap(
+                            stat -> extractEventIdFromUri(stat.getUri()),
+                            StatsDto::getHits
+                    ));
+        } catch (Exception e) {
+            log.warn("Failed to get views from stats server: {}", e.getMessage());
+            return Collections.emptyMap();
+        }
+    }
+
+    private Long extractEventIdFromUri(String uri) {
+        try {
+            String[] parts = uri.split("/");
+            return Long.parseLong(parts[parts.length - 1]);
+        } catch (Exception e) {
+            log.warn("Failed to extract event ID from URI: {}", uri);
+            return -1L;
+        }
+    }
+
+    private Long getViewsFromStatsServer(Event event) {
         try {
             Thread.sleep(200);
 
             List<StatsDto> stats = statsClient.getStats(
-                    "1900-01-01 00:00:00",
+                    SimpleDateTimeFormatter.toString(event.getCreatedOn()),
                     SimpleDateTimeFormatter.toString(LocalDateTime.now()),
-                    List.of("/events/" + eventId),
+                    List.of("/events/" + event.getId()),
                     true
             );
             return stats.isEmpty() ? 0L : stats.getFirst().getHits();
