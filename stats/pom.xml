@@ -12,8 +12,8 @@
     <artifactId>stats</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>stats-client</module>
         <module>stats-dto</module>
+        <module>stats-client</module>
         <module>stats-server</module>
     </modules>
 
@@ -29,4 +29,5 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
     </dependencies>
+
 </project>

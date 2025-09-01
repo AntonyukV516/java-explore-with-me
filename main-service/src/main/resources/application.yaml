@@ -1,0 +1,39 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://main-db:5432/explorewithme
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: 'true'
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: 'true'
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: UTC
+    serialization:
+      write-dates-as-timestamps: false
+
+server:
+  port: 8080
+
+MainServiceApp:
+  name: main-service
+  stats-service:
+    url: http://stats-server-container:9090
+
+stats:
+  service:
+    url: http://stats-server:9090
+
+logging:
+  level:
+    ru.practicum.explorewithme: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
