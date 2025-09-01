@@ -16,11 +16,11 @@ public interface EventService {
 
     EventDto findById(Long eventId);
 
+    Event findEventById(Long eventId);
+
     EventDto create(Long userId, EventDto newEventDto);
 
     EventDto updateByAdmin(long eventId, UpdateAdminEventDto eventDto);
 
     EventDto updateByUser(Long userId, Long eventId, UpdateEventDto eventDto);
-
-    Event findEventById(Long eventId);
 }

@@ -163,6 +163,7 @@ public class EventServiceImpl implements EventService {
         }
     }
 
+    @Override
     @Transactional
     public Event findEventById(Long eventId) {
         return eventRepository.findById(eventId)
