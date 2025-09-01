@@ -18,8 +18,4 @@ public class SimpleDateTimeFormatter {
     public static LocalDateTime parse(String dateTimeString) {
         return LocalDateTime.parse(dateTimeString, DateTimeFormatter.ofPattern(PATTERN));
     }
-
-    public static LocalDateTime parse(String dateTimeString) {
-        return LocalDateTime.parse(dateTimeString, DateTimeFormatter.ofPattern(PATTERN));
-    }
 }

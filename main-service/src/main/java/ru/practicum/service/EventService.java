@@ -23,6 +23,4 @@ public interface EventService {
     EventDto updateByAdmin(long eventId, UpdateAdminEventDto eventDto);
 
     EventDto updateByUser(Long userId, Long eventId, UpdateEventDto eventDto);
-
-    Event findEventById(Long eventId);
 }
