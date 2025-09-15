@@ -1,4 +1,9 @@
-# java-explore-with-me
-Template repository for ExploreWithMe project.
+ ## java-explore-with-me
+Многомодульный проект - афиша мероприятий, с разделенным на 3 части API: 
+- Публичная, для доступа всех пользователей к просмотрам событий, подборок, комментариев
+- Закрытая, для доступа авторизованным пользователям, редактированию и изменению событий
+- Административная, для администрирования всех данных 
+Так же реализован модуль статистики
+Стек: Java core, Spring Boot, JPA, Hibernate, Maven, SQL, PostgreSQL, работа с базами данных, Postman, Docker, Git
 
 https://github.com/AntonyukV516/java-explore-with-me/pull/3
